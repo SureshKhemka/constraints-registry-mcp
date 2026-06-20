@@ -23,6 +23,9 @@
       <string>127.0.0.1</string>
       <string>--port</string>
       <string>8765</string>
+      <!-- periodically re-import so constraint changes are picked up without a restart -->
+      <string>--reload-interval</string>
+      <string>60</string>
     </array>
 
     <key>EnvironmentVariables</key>

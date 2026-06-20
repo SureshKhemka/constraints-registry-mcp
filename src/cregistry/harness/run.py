@@ -14,7 +14,7 @@ import sys
 from collections.abc import Callable
 
 from ..config import RegistryConfig, load_config
-from .checks import engine, import_, integrity, mcp, namespace, output, schema, version
+from .checks import engine, import_, integrity, mcp, namespace, output, reload, schema, version
 from .result import CheckResult, Status
 
 # Ordered registry of checks. Each entry runs a VH-* section against the config.
@@ -28,6 +28,7 @@ CHECKS: list[Callable[[RegistryConfig], list[CheckResult]]] = [
     integrity.run,
     mcp.run,
     output.run,
+    reload.run,
 ]
 
 
