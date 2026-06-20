@@ -55,6 +55,22 @@ def _relationship_overlap(a: Relationship, b: Relationship) -> bool:
     )
 
 
+def scopes_equal(a: Scope, b: Scope) -> bool:
+    """True if two scopes target exactly the same selector set (FR-NAMESPACE-2).
+
+    Used for precedence/conflict detection: two constraints "target the same
+    scope" only when their selectors are equal, not merely overlapping. This
+    avoids false-positive relaxation conflicts between unrelated, broadly-scoped
+    constraints (e.g. a provider-only rule vs a repo-tag-only rule)."""
+    return (
+        set(a.providers) == set(b.providers)
+        and set(a.resource_types) == set(b.resource_types)
+        and set(a.environments) == set(b.environments)
+        and set(a.repos) == set(b.repos)
+        and a.relationship == b.relationship
+    )
+
+
 def scopes_overlap(a: Scope, b: Scope) -> bool:
     """True if some artifact could fall in both scopes (FR-NAMESPACE-2).
 

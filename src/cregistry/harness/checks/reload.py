@@ -73,6 +73,26 @@ def run(config: RegistryConfig) -> list[CheckResult]:
                              details=[{"v1": v1, "v2": v2, "n1": n1, "n2": n2, "old_retained": old_retained, "status": st1}])
         )
 
+        # --- EXT-RELOAD-3: revert the change; latest must follow back to the
+        # earlier (re-published) bundle, not stay on the newer one.
+        (team_dir / "constraints" / "b.yaml").unlink()
+        st3 = svc.reload()
+        latest_reverted = svc.store.latest().bundle_id
+        n3 = len(svc.store.latest().constraints)
+        reverted_ok = st3["ok"] and latest_reverted == v1 and n3 == n1
+        r3 = (
+            CheckResult.ok(SECTION, "EXT-RELOAD-3",
+                           "reverting content moved latest back to the earlier published bundle")
+            if reverted_ok else
+            CheckResult.fail(SECTION, "EXT-RELOAD-3", "revert did not move latest back",
+                             details=[{"latest_reverted": latest_reverted, "expected_v1": v1, "n3": n3, "status": st3}])
+        )
+
+        # re-add b.yaml so the conflict step below starts from the 2-constraint state
+        _write(team_dir / "constraints" / "b.yaml",
+               _constraint("team.gcs", "soft", {"providers": ["gcp"]}))
+        svc.reload()
+
         # --- EXT-RELOAD-2: introduce an illegal relaxation; reload must keep last-good.
         plat_dir = tmp / "sources" / "platform"
         _write(plat_dir / "constraints" / "p.yaml",
@@ -92,6 +112,6 @@ def run(config: RegistryConfig) -> list[CheckResult]:
             CheckResult.fail(SECTION, "EXT-RELOAD-2", "failed reload did not preserve last-good bundle",
                              details=[{"latest_after": latest_after, "expected": v2, "status": st2}])
         )
-        return [r1, r2]
+        return [r1, r3, r2]
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

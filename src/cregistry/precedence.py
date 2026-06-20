@@ -2,7 +2,10 @@
 
 Default policy (the only policy in V0):
 
-* Two constraints from *different* sources whose scopes overlap are compared.
+* Two constraints from *different* sources that target the **same scope**
+  (identical selectors, not merely overlapping) are compared. Requiring scope
+  *equality* avoids false-positive relaxation conflicts between unrelated,
+  broadly-scoped constraints.
 * A ``hard`` constraint outranks a non-``hard`` one (severity decides the winner).
 * A downstream (lower-precedence) source MAY add/strengthen but MUST NOT relax
   (override to weaker severity) a constraint from a higher-precedence source;
@@ -19,7 +22,7 @@ from dataclasses import dataclass
 
 from .bundle import ImportedConstraint
 from .config import RegistryConfig
-from .scope import scopes_overlap
+from .scope import scopes_equal
 
 
 @dataclass(frozen=True)
@@ -46,7 +49,7 @@ def _record(winner: ImportedConstraint, loser: ImportedConstraint, reason: str) 
         "loser": loser.effective_id,
         "winner_severity": winner.constraint.severity.value,
         "loser_severity": loser.constraint.severity.value,
-        "scope_relation": "overlap",
+        "scope_relation": "same-scope",
         "reason": reason,
     }
 
@@ -65,7 +68,7 @@ def resolve_precedence(
             a, b = ordered[i], ordered[j]
             if a.source == b.source:
                 continue
-            if not scopes_overlap(a.constraint.scope, b.constraint.scope):
+            if not scopes_equal(a.constraint.scope, b.constraint.scope):
                 continue
 
             pa, pb = prec_of.get(a.source, 0), prec_of.get(b.source, 0)

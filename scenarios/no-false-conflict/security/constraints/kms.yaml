@@ -1,0 +1,15 @@
+# Higher-precedence, hard, broadly scoped (provider/resource only, no repos).
+# Must NOT conflict with the unrelated repo-tag-scoped org constraint below:
+# their scopes overlap but are not identical (FR-NAMESPACE-2, identical-scope).
+id: sec.kms-rotation
+title: "Broadly-scoped hard rule"
+intent: "Regression guard: broadly-scoped hard rule must not falsely conflict."
+category: infrastructure
+scope:
+  providers: [aws]
+  resource_types: [aws_kms_key]
+severity: hard
+guidance:
+  example_compliant: "ok"
+owner: security
+version: 1.0.0
