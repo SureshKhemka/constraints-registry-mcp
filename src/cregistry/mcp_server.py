@@ -14,6 +14,7 @@ The MCP tools are thin wrappers over ``RegistryService`` (see ``service.py``).
 
 from __future__ import annotations
 
+import argparse
 import os
 from typing import Any
 
@@ -78,9 +79,41 @@ def build_server(service: RegistryService | None = None, config_path: str | None
     return mcp
 
 
+def _resolve_transport(http: bool, transport: str) -> str:
+    """Map CLI flags to a FastMCP transport name."""
+    if http or transport == "http":
+        return "streamable-http"
+    return transport  # "stdio" or "sse"
+
+
 def main(argv: list[str] | None = None) -> int:
-    server = build_server()
-    server.run()  # stdio transport
+    parser = argparse.ArgumentParser(description="Constraint Registry MCP server")
+    parser.add_argument(
+        "--transport",
+        choices=["stdio", "http", "sse"],
+        default="stdio",
+        help="transport to serve on (default: stdio, spawned per-tool)",
+    )
+    parser.add_argument(
+        "--http",
+        action="store_true",
+        help="shorthand for --transport http: one shared server every tool connects to",
+    )
+    parser.add_argument("--host", default="127.0.0.1", help="bind host for http/sse (default: 127.0.0.1)")
+    parser.add_argument("--port", type=int, default=8765, help="bind port for http/sse (default: 8765)")
+    parser.add_argument(
+        "--config",
+        default=os.environ.get("CREGISTRY_CONFIG", "registry.config.yaml"),
+        help="path to registry config (default: $CREGISTRY_CONFIG or registry.config.yaml)",
+    )
+    args = parser.parse_args(argv)
+
+    transport = _resolve_transport(args.http, args.transport)
+    server = build_server(config_path=args.config)
+    if transport != "stdio":
+        server.settings.host = args.host
+        server.settings.port = args.port
+    server.run(transport=transport)
     return 0
 
 
