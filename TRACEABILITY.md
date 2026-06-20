@@ -44,7 +44,7 @@ Run: `uv run cregistry-harness`.
 | FR-QUERY-2 | `scope.py` (incl relationship) | VH-MCP-1/2 | ✅ |
 | FR-QUERY-3 | `query.py` (constraint_view) | VH-MCP-1 | ✅ |
 | FR-MCP-1 | `mcp_server.py` | VH-MCP-1 | ✅ |
-| FR-MCP-2 | `mcp_server.py` | VH-MCP-1 | ✅ |
+| FR-MCP-2 | `mcp_server.py` (get_constraints, validate; + describe_scope discovery aid) | VH-MCP-1 | ✅ |
 | FR-MCP-3 | `mcp_server.py` + `docs/MCP_CONTRACT.md` | VH-MCP-1 | ✅ |
 | FR-MCP-4 | `service.py`, `mcp_server.py` (fail-open) | VH-MCP-3 | ✅ |
 | FR-INTEGRITY-1 | `integrity.py` | VH-INTEGRITY-1 | ✅ |

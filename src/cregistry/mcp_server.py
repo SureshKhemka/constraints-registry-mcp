@@ -34,13 +34,30 @@ def build_server(service: RegistryService | None = None, config_path: str | None
         description=(
             "Return engineering constraints relevant to a scope. Inputs: scope "
             "(providers, resource_types, environments, repos, relationship), "
-            "optional version (bundle id; defaults to latest). Output: {available, "
-            "bundle_id, constraints[]}. Fails open: on any error returns "
+            "optional version (bundle id; defaults to latest). resource_types use "
+            "Terraform resource identifiers, e.g. 'aws_s3_bucket' (NOT 's3_bucket'); "
+            "repos are tags like 'tag:data-plane'. If unsure of valid values, call "
+            "describe_scope first, or simply omit a dimension (omitted dimensions "
+            "are 'don't care' and broaden the match rather than excluding). Output: "
+            "{available, bundle_id, constraints[]}. Fails open: on any error returns "
             "available=false with an empty constraints list so you can proceed."
         )
     )
     def get_constraints(scope: dict[str, Any] | None = None, version: str | None = None) -> dict:
         return service.get_constraints(scope, version)
+
+    @mcp.tool(
+        description=(
+            "Discover the selector vocabulary present in the registry so you can "
+            "build a correct scope instead of guessing. Output lists the distinct "
+            "providers, resource_types (Terraform resource identifiers, e.g. "
+            "'aws_s3_bucket' not 's3_bucket'), environments, repos (tags like "
+            "'tag:data-plane'), categories, severities, sources, and relationship "
+            "layers/interactions. Call this first if unsure of valid scope values."
+        )
+    )
+    def describe_scope(version: str | None = None) -> dict:
+        return service.describe_scope(version)
 
     @mcp.tool(
         description=(

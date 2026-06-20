@@ -67,6 +67,64 @@ class RegistryService:
                 "constraints": [],
             }
 
+    def describe_scope(self, version: str | None = None) -> dict:
+        """Return the selector vocabulary present in the bundle (discovery aid).
+
+        Lets an agent look up valid scope values (provider/resource-type/repo tags
+        and relationship layers/interactions) instead of guessing, e.g. learning
+        that S3 uses the Terraform id ``aws_s3_bucket`` rather than ``s3_bucket``.
+        Fails open like get_constraints (guidance, never blocks)."""
+        empty = {
+            "providers": [], "resource_types": [], "environments": [], "repos": [],
+            "categories": [], "severities": [],
+            "relationship": {"source_layers": [], "target_layers": [], "interactions": []},
+            "sources": [],
+        }
+        try:
+            bundle = self._resolve_bundle(version)
+            if bundle is None:
+                return {"available": False, "bundle_id": None, "constraint_count": 0, **empty}
+
+            providers, resource_types, environments, repos = set(), set(), set(), set()
+            categories, severities, sources = set(), set(), set()
+            src_layers, tgt_layers, interactions = set(), set(), set()
+            for ic in bundle.constraints:
+                c, s = ic.constraint, ic.constraint.scope
+                providers |= set(s.providers)
+                resource_types |= set(s.resource_types)
+                environments |= set(s.environments)
+                repos |= set(s.repos)
+                categories.add(c.category.value)
+                severities.add(c.severity.value)
+                sources.add(ic.source)
+                if s.relationship:
+                    r = s.relationship
+                    if r.source and r.source.layer:
+                        src_layers.add(r.source.layer)
+                    if r.target and r.target.layer:
+                        tgt_layers.add(r.target.layer)
+                    if r.interaction:
+                        interactions.add(r.interaction)
+            return {
+                "available": True,
+                "bundle_id": bundle.bundle_id,
+                "constraint_count": len(bundle.constraints),
+                "providers": sorted(providers),
+                "resource_types": sorted(resource_types),
+                "environments": sorted(environments),
+                "repos": sorted(repos),
+                "categories": sorted(categories),
+                "severities": sorted(severities),
+                "relationship": {
+                    "source_layers": sorted(src_layers),
+                    "target_layers": sorted(tgt_layers),
+                    "interactions": sorted(interactions),
+                },
+                "sources": sorted(sources),
+            }
+        except Exception as exc:  # noqa: BLE001 - discovery is guidance; never block
+            return {"available": False, "bundle_id": None, "constraint_count": 0, "reason": repr(exc), **empty}
+
     def validate(self, artifact, scope: dict | None = None, version: str | None = None) -> dict:
         bundle = self._resolve_bundle(version)
         if bundle is None:

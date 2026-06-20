@@ -46,6 +46,18 @@ def _contract(config: RegistryConfig) -> CheckResult:
         if not getattr(tools[name], "inputSchema", None):
             problems.append(f"{name} has no input schema")
 
+    # describe_scope discovery tool: exposes the real selector vocabulary so an
+    # agent can avoid guessing (e.g. aws_s3_bucket vs s3_bucket).
+    if "describe_scope" not in tools:
+        problems.append("describe_scope tool missing")
+    else:
+        ds = _call(server, "describe_scope", {})
+        if not (ds.get("available") and "aws_s3_bucket" in ds.get("resource_types", [])
+                and {"aws", "gcp"} <= set(ds.get("providers", []))
+                and "tag:data-plane" in ds.get("repos", [])
+                and "synchronous" in ds.get("relationship", {}).get("interactions", [])):
+            problems.append(f"describe_scope vocabulary incomplete: {ds}")
+
     # get_constraints contract + FR-QUERY-3 fields.
     gc = _call(server, "get_constraints", {"scope": {"providers": ["aws"], "resource_types": ["aws_s3_bucket"], "environments": ["prod"], "repos": ["tag:data-plane"]}})
     if not (gc.get("available") and isinstance(gc.get("constraints"), list) and gc.get("bundle_id")):
