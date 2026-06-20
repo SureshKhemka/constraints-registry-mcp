@@ -19,3 +19,14 @@ uv run cregistry-harness
 The harness emits machine-readable JSON and exits non-zero on any failure
 (VH-OUTPUT-1), running end-to-end against the self-contained sample sources under
 `sources/` (VH-OUTPUT-2).
+
+## Running the MCP server
+
+```bash
+uv run cregistry-mcp                 # stdio (default; each tool spawns its own)
+uv run cregistry-mcp --http --port 8765   # one shared HTTP server for all tools
+```
+
+See `docs/RUNNING.md` for per-tool setup (Claude Code / Cursor / Codex),
+stop/restart, and macOS launchd auto-start, and `docs/MCP_CONTRACT.md` for the
+tool contracts.

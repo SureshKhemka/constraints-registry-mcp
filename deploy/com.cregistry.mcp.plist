@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  launchd template for running the Constraint Registry MCP server as one shared,
+  always-on HTTP server (macOS). Adjust the absolute paths for your machine:
+    - the `uv` path (here: Homebrew on Apple Silicon: /opt/homebrew/bin/uv)
+    - the project directory and config path
+  Install instructions: see docs/RUNNING.md.
+-->
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>com.cregistry.mcp</string>
+
+    <key>ProgramArguments</key>
+    <array>
+      <string>/opt/homebrew/bin/uv</string>
+      <string>run</string>
+      <string>--directory</string>
+      <string>/Users/skhemka/constraint-registry</string>
+      <string>cregistry-mcp</string>
+      <string>--http</string>
+      <string>--host</string>
+      <string>127.0.0.1</string>
+      <string>--port</string>
+      <string>8765</string>
+    </array>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+      <key>CREGISTRY_CONFIG</key>
+      <string>/Users/skhemka/constraint-registry/registry.config.yaml</string>
+    </dict>
+
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/tmp/cregistry-mcp.log</string>
+    <key>StandardErrorPath</key>
+    <string>/tmp/cregistry-mcp.err</string>
+  </dict>
+</plist>
