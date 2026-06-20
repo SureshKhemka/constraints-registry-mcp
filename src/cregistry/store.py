@@ -15,15 +15,21 @@ class BundleStore:
     def __init__(self) -> None:
         self._order: list[str] = []
         self._by_id: dict[str, Bundle] = {}
+        # The currently-published bundle. Tracked separately from insertion order
+        # so that re-publishing a previously-seen bundle (e.g. a reload that
+        # reverts to earlier content, same hash) correctly moves "latest" back to
+        # it rather than leaving it on a newer-but-stale version.
+        self._current_id: str | None = None
 
     def add(self, bundle: Bundle) -> Bundle:
         if bundle.bundle_id not in self._by_id:
             self._by_id[bundle.bundle_id] = bundle
             self._order.append(bundle.bundle_id)
+        self._current_id = bundle.bundle_id
         return self._by_id[bundle.bundle_id]
 
     def latest(self) -> Bundle | None:
-        return self._by_id[self._order[-1]] if self._order else None
+        return self._by_id[self._current_id] if self._current_id else None
 
     def get(self, bundle_id: str | None = None) -> Bundle | None:
         """Fetch a pinned bundle by id, or the latest when ``bundle_id`` is None

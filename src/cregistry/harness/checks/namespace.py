@@ -84,11 +84,23 @@ def _precedence(config: RegistryConfig) -> CheckResult:
         relax_conflict.constraints
     ) == {"upstream/base.s3-hard", "downstream/team.s3-soft"}
 
-    if positive_ok and negative_ok:
+    # (c) Guard: broadly-scoped constraints that merely overlap (not identical
+    # scope) must NOT be flagged as a relaxation conflict (FR-NAMESPACE-2).
+    nf_dir = config.base_dir / "scenarios" / "no-false-conflict"
+    nf_cfg = RegistryConfig(
+        sources=[
+            SourceConfig(name="security", path=str(nf_dir / "security"), precedence=100),
+            SourceConfig(name="org", path=str(nf_dir / "org"), precedence=50),
+        ]
+    )
+    nofalse = import_sources(nf_cfg)
+    no_false_positive = nofalse.ok and not nofalse.conflicts and len(nofalse.bundle.constraints) == 2
+
+    if positive_ok and negative_ok and no_false_positive:
         return CheckResult.ok(
             SECTION,
             "VH-NAMESPACE-2",
-            "hard outranks weaker; illegal downstream relaxation reported as error",
+            "hard outranks weaker; illegal same-scope relaxation errors; unrelated overlap does not",
             details=[
                 {"precedence_records": ok_report.bundle.precedence},
                 {"conflict": relax_conflict.to_dict()},
@@ -105,6 +117,8 @@ def _precedence(config: RegistryConfig) -> CheckResult:
                 "ok_records": ok_report.bundle.precedence,
                 "negative_ok": negative_ok,
                 "relax_conflicts": [c.to_dict() for c in relax_report.conflicts],
+                "no_false_positive": no_false_positive,
+                "nofalse_conflicts": [c.to_dict() for c in nofalse.conflicts],
             }
         ],
     )

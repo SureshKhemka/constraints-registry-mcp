@@ -1,0 +1,14 @@
+# Lower-precedence, weaker, broadly scoped on a different dimension (repos only).
+# Overlaps the KMS rule's scope (each leaves dimensions unset) but is NOT the
+# same scope, so it must not be treated as relaxing the hard rule.
+id: org.adr
+title: "Repo-tag-scoped advisory rule"
+intent: "Regression guard: unrelated weaker rule must coexist, not conflict."
+category: organizational
+scope:
+  repos: ["tag:service"]
+severity: advisory
+guidance:
+  example_compliant: "ok"
+owner: org
+version: 1.0.0
