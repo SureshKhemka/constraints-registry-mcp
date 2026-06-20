@@ -16,6 +16,9 @@ from __future__ import annotations
 
 import argparse
 import os
+import sys
+import threading
+import time
 from typing import Any
 
 from mcp.server.fastmcp import FastMCP
@@ -86,6 +89,28 @@ def _resolve_transport(http: bool, transport: str) -> str:
     return transport  # "stdio" or "sse"
 
 
+def _start_refresher(service: RegistryService, interval: int) -> threading.Thread:
+    """Background thread that periodically hot-reloads the bundle (decoupled from
+    the process lifecycle). Logs to STDERR only — STDOUT is the stdio MCP channel.
+    A failed reload keeps the last-good bundle (handled in service.reload)."""
+
+    def loop() -> None:
+        while True:
+            time.sleep(interval)
+            try:
+                status = service.reload()
+                if status.get("ok") and status.get("changed"):
+                    print(f"[cregistry] reloaded bundle {status['bundle_id']}", file=sys.stderr, flush=True)
+                elif not status.get("ok"):
+                    print(f"[cregistry] reload failed, kept last-good: {status}", file=sys.stderr, flush=True)
+            except Exception as exc:  # noqa: BLE001 - refresher must never crash the server
+                print(f"[cregistry] reload error: {exc!r}", file=sys.stderr, flush=True)
+
+    thread = threading.Thread(target=loop, name="cregistry-refresher", daemon=True)
+    thread.start()
+    return thread
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Constraint Registry MCP server")
     parser.add_argument(
@@ -106,10 +131,21 @@ def main(argv: list[str] | None = None) -> int:
         default=os.environ.get("CREGISTRY_CONFIG", "registry.config.yaml"),
         help="path to registry config (default: $CREGISTRY_CONFIG or registry.config.yaml)",
     )
+    parser.add_argument(
+        "--reload-interval",
+        type=int,
+        default=0,
+        help="seconds between background hot-reloads of the bundle; 0 disables (default)",
+    )
     args = parser.parse_args(argv)
 
     transport = _resolve_transport(args.http, args.transport)
-    server = build_server(config_path=args.config)
+    # Build the service explicitly so the refresher can hot-reload it (the config
+    # path enables reloading from disk without restarting the process).
+    service = RegistryService.from_config_path(args.config)
+    if args.reload_interval > 0:
+        _start_refresher(service, args.reload_interval)
+    server = build_server(service=service)
     if transport != "stdio":
         server.settings.host = args.host
         server.settings.port = args.port

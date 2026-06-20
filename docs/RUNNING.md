@@ -29,15 +29,40 @@ nohup uv run --directory /Users/skhemka/constraint-registry cregistry-mcp --http
 ```
 
 CLI flags: `--http` (or `--transport http`), `--host` (default `127.0.0.1`),
-`--port` (default `8765`), `--config` (or `$CREGISTRY_CONFIG`).
+`--port` (default `8765`), `--config` (or `$CREGISTRY_CONFIG`),
+`--reload-interval` (seconds; `0` = off, see below).
 
 **Stop / restart:**
 ```bash
 lsof -ti tcp:8765 | xargs kill        # stop
 # restart = stop, then start again
 ```
-> Restart after editing any constraint/source — the bundle is built once at
-> startup, so a running server will not see edits until it is restarted.
+
+### Hot reload (pick up constraint changes without restarting)
+
+For an org where constraints change often, run with a refresh interval so the
+server periodically re-imports from disk — no restart needed:
+
+```bash
+uv run --directory /Users/skhemka/constraint-registry cregistry-mcp \
+  --http --port 8765 --reload-interval 60
+```
+
+How it behaves:
+- Every `--reload-interval` seconds the server re-imports from the configured
+  source paths and **publishes a new immutable bundle** as the latest version.
+- It is a **no-op if nothing changed** (identical content hash).
+- A reload that **fails** (e.g. an unresolvable precedence conflict or a
+  config error) **keeps the last-good bundle serving** and logs the failure to
+  stderr — the server never goes dark.
+- Previous bundle versions remain retrievable by id (pin via the `version`
+  argument), so in-flight consumers are unaffected by a swap.
+
+Decoupling: the server reads constraints/policies from the configured source
+paths on disk. Wire your constraints repos to sync/pull into those paths (a
+separate ops job, e.g. a cron `git pull` or CI publish); the server picks up
+whatever is on disk at the next refresh. With `--reload-interval` set you do
+**not** need to restart after edits.
 
 **Connect each tool** to `http://127.0.0.1:8765/mcp`:
 - **Claude Code:** `claude mcp add --transport http constraint-registry http://127.0.0.1:8765/mcp`
@@ -58,4 +83,7 @@ launchctl unload ~/Library/LaunchAgents/com.cregistry.mcp.plist  # stop + disabl
 ```
 
 With `KeepAlive` set, launchd restarts the server if it crashes; `kickstart -k`
-is the clean "restart" once it is managed by launchd.
+is the clean "restart" once it is managed by launchd. The template sets
+`--reload-interval 60`, so day-to-day constraint changes (and config edits like
+adding a source/engine, which reload re-reads) are picked up automatically —
+`kickstart -k` is only needed for code/dependency changes.

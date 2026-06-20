@@ -12,7 +12,11 @@ since it is an active check.
 
 from __future__ import annotations
 
-from .config import RegistryConfig
+import threading
+from datetime import datetime, timezone
+from pathlib import Path
+
+from .config import RegistryConfig, load_config
 from .engine.registry import EngineRegistry
 from .importer import import_sources
 from .model import Scope
@@ -27,10 +31,23 @@ class ValidationUnavailable(Exception):
 
 
 class RegistryService:
-    def __init__(self, config: RegistryConfig, store: BundleStore, registry: EngineRegistry) -> None:
+    def __init__(
+        self,
+        config: RegistryConfig,
+        store: BundleStore,
+        registry: EngineRegistry,
+        config_path: str | None = None,
+    ) -> None:
         self.config = config
         self.store = store
         self.registry = registry
+        # Path to reload config from on reload(); None => reuse the in-memory
+        # config object (source/policy files on disk are still re-read).
+        self.config_path = config_path
+        self.last_reload: dict | None = None
+        # Guards atomic swap of (config, store, registry) on reload (thread-safe
+        # hot-reload alongside request handling). Reads take a brief snapshot.
+        self._lock = threading.RLock()
 
     @classmethod
     def from_config(cls, config: RegistryConfig) -> "RegistryService":
@@ -39,13 +56,63 @@ class RegistryService:
         store.add(bundle)
         return cls(config, store, EngineRegistry.from_config(config))
 
-    def _resolve_bundle(self, version: str | None):
-        return self.store.get(version)
+    @classmethod
+    def from_config_path(cls, path: str | Path) -> "RegistryService":
+        """Build a service that can later reload() from the given config file."""
+        svc = cls.from_config(load_config(path))
+        svc.config_path = str(path)
+        return svc
+
+    def _snapshot(self) -> tuple[BundleStore, EngineRegistry, RegistryConfig]:
+        with self._lock:
+            return self.store, self.registry, self.config
+
+    def reload(self) -> dict:
+        """Re-import from disk and atomically publish a new immutable bundle.
+
+        A no-op if nothing changed (identical content hash). On a failed import
+        (e.g. an unresolvable precedence conflict), the last-good bundle keeps
+        serving and the failure is reported (NFR-2). Old bundle versions remain
+        retrievable in the store (FR-VERSION-3).
+        """
+        cfg = load_config(self.config_path) if self.config_path else self.config
+        report = import_sources(cfg)
+        now = datetime.now(timezone.utc).isoformat()
+        with self._lock:
+            prev = self.store.latest()
+            prev_id = prev.bundle_id if prev else None
+            if report.ok:
+                self.config = cfg
+                self.registry = EngineRegistry.from_config(cfg)
+                self.store.add(report.bundle)
+                new_id = self.store.latest().bundle_id
+                self.last_reload = {
+                    "at": now,
+                    "ok": True,
+                    "changed": new_id != prev_id,
+                    "bundle_id": new_id,
+                    "constraint_count": len(report.bundle.constraints),
+                    "schema_errors": len(report.schema_errors),
+                }
+            else:
+                self.last_reload = {
+                    "at": now,
+                    "ok": False,
+                    "changed": False,
+                    "kept_bundle_id": prev_id,
+                    "conflicts": [c.to_dict() for c in report.conflicts],
+                    "schema_errors": len(report.schema_errors),
+                }
+        return self.last_reload
+
+    def _resolve_bundle(self, store: BundleStore, version: str | None):
+        return store.get(version)
 
     def get_constraints(self, scope: dict | None = None, version: str | None = None) -> dict:
         # FR-MCP-4: fail open. Any failure -> empty, proceed-able result.
         try:
-            bundle = self._resolve_bundle(version)
+            store, _, _ = self._snapshot()
+            bundle = self._resolve_bundle(store, version)
             if bundle is None:
                 return {
                     "available": False,
@@ -81,7 +148,8 @@ class RegistryService:
             "sources": [],
         }
         try:
-            bundle = self._resolve_bundle(version)
+            store, _, _ = self._snapshot()
+            bundle = self._resolve_bundle(store, version)
             if bundle is None:
                 return {"available": False, "bundle_id": None, "constraint_count": 0, **empty}
 
@@ -126,9 +194,10 @@ class RegistryService:
             return {"available": False, "bundle_id": None, "constraint_count": 0, "reason": repr(exc), **empty}
 
     def validate(self, artifact, scope: dict | None = None, version: str | None = None) -> dict:
-        bundle = self._resolve_bundle(version)
+        store, registry, config = self._snapshot()
+        bundle = self._resolve_bundle(store, version)
         if bundle is None:
             raise ValidationUnavailable("no servable bundle for the requested version")
         sc = Scope.model_validate(scope or {})
-        report = _validate(bundle, artifact, sc, self.registry, self.config)
+        report = _validate(bundle, artifact, sc, registry, config)
         return report.to_dict()
