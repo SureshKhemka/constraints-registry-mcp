@@ -1,0 +1,13 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Fail fixture: S3 bucket with public-read ACL. CKV_AWS_20 should FAIL.",
+  "Resources": {
+    "PublicBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "my-public-bucket",
+        "AccessControl": "PublicRead"
+      }
+    }
+  }
+}

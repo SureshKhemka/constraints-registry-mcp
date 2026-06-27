@@ -1,0 +1,110 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Semgrep OSS",
+          "version": "1.70.0",
+          "informationUri": "https://semgrep.dev",
+          "rules": [
+            {
+              "id": "python.lang.security.audit.exec-detected.exec-detected",
+              "name": "exec-detected",
+              "shortDescription": {
+                "text": "Use of `exec`"
+              },
+              "fullDescription": {
+                "text": "Detected the use of exec(). exec() can be dangerous if used to evaluate dynamic content. If this content can be controlled by a user, this is a code injection vulnerability. Ensure evaluated content is not controllable by external sources, or remove the use of exec()."
+              },
+              "help": {
+                "text": "Use of exec() is insecure and may lead to remote code execution.",
+                "uri": "https://semgrep.dev/r/python.lang.security.audit.exec-detected"
+              },
+              "properties": {
+                "precision": "very-high",
+                "tags": ["security", "correctness", "CWE-78"]
+              }
+            },
+            {
+              "id": "python.lang.maintainability.useless-ifmain.useless-ifmain",
+              "name": "useless-ifmain",
+              "shortDescription": {
+                "text": "Useless `if __name__ == '__main__'` block"
+              },
+              "help": {
+                "text": "Useless if-main block."
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "python.lang.security.audit.exec-detected.exec-detected",
+          "level": "error",
+          "message": {
+            "text": "Use of `exec` detected. This can lead to remote code execution."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/app.py",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 42,
+                  "startColumn": 5,
+                  "endLine": 42,
+                  "endColumn": 25
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "python.lang.maintainability.useless-ifmain.useless-ifmain",
+          "level": "warning",
+          "message": {
+            "text": "Useless if-main block in module."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "src/utils.py",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 100,
+                  "startColumn": 1,
+                  "endLine": 102,
+                  "endColumn": 1
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "python.lang.security.audit.exec-detected.exec-detected",
+          "level": "none",
+          "message": {
+            "text": "This result is suppressed (level=none) and must be dropped by parse_sarif."
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "tests/test_sandbox.py",
+                  "uriBaseId": "%SRCROOT%"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

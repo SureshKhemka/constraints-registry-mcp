@@ -1,0 +1,8 @@
+rules:
+  - id: no-print
+    patterns:
+      - pattern: print(...)
+    message: "Use structured logging instead of print()."
+    languages: [python]
+    severity: INFO
+    # No metadata.license field — used to test unknown-license skip behaviour.

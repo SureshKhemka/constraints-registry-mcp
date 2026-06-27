@@ -1,0 +1,19 @@
+# Minimal semgrep constraint used by the adapter E2E tests.
+# Scoped to "python" so it can be excluded from queries that specify
+# a different resource_type, testing the scoping boundary.
+id: test.no-eval
+title: "No eval() in production Python"
+intent: "Prevent code injection via eval(); eval() executes arbitrary code."
+category: architectural
+scope:
+  resource_types: [python]
+severity: soft
+enforcement:
+  - engine: semgrep
+    policy: rule.yaml
+guidance:
+  dont:
+    - "Never call eval() on user-supplied or external input"
+  example_compliant: "int('42')"
+owner: test-suite
+version: "0.1.0"

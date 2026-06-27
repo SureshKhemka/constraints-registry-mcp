@@ -1,0 +1,13 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Pass fixture: S3 bucket with private ACL. CKV_AWS_20 should PASS.",
+  "Resources": {
+    "PrivateBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "my-private-bucket",
+        "AccessControl": "Private"
+      }
+    }
+  }
+}

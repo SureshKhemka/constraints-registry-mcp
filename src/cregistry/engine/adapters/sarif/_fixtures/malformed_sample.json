@@ -1,0 +1,79 @@
+{
+  "version": "2.1.0",
+  "_comment": "Intentionally malformed SARIF to exercise defensive parsing. parse_sarif must not raise on any of these inputs.",
+  "runs": [
+    {
+      "tool": {},
+      "_comment": "tool.driver is missing — _build_rule_map must return {} without raising",
+      "results": [
+        null,
+        "not-a-dict-result",
+        42,
+        {
+          "_comment": "level=none — must be dropped",
+          "ruleId": "DROP_ME",
+          "level": "none",
+          "message": {"text": "this must be dropped"}
+        },
+        {
+          "_comment": "message is a plain string (not an object) — legal fallback",
+          "ruleId": "STR_MSG",
+          "level": "error",
+          "message": "direct string message"
+        },
+        {
+          "_comment": "locations is a string, not a list — path must be None",
+          "ruleId": "BAD_LOC",
+          "level": "error",
+          "message": {"text": "location field is malformed but result is otherwise valid"},
+          "locations": "not-a-list"
+        },
+        {
+          "_comment": "locations[0] is missing physicalLocation — path must be None",
+          "ruleId": "MISSING_PL",
+          "level": "warning",
+          "message": {"text": "physicalLocation absent"},
+          "locations": [
+            {"logicalLocations": [{"name": "SomeBucket"}]}
+          ]
+        },
+        {
+          "_comment": "unknown level string — must be treated as 'warning'",
+          "ruleId": "UNKNOWN_LEVEL",
+          "level": "critical",
+          "message": {"text": "unknown level falls back to warning"}
+        },
+        {
+          "_comment": "fully valid result that should survive despite malformed siblings",
+          "ruleId": "VALID_001",
+          "level": "error",
+          "message": {
+            "text": "This valid result must survive all the malformed siblings"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "infra/bad.tf",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {"startLine": 7}
+              }
+            }
+          ]
+        }
+      ]
+    },
+    "not-a-run-object",
+    {
+      "_comment": "rules is a string, not a list — _build_rule_map must return {} gracefully",
+      "tool": {"driver": {"name": "broken-engine", "rules": "not-a-list"}},
+      "results": []
+    },
+    {
+      "_comment": "results is a dict, not a list — must be skipped",
+      "tool": {"driver": {"name": "broken-engine2", "rules": []}},
+      "results": {"unexpected": "shape"}
+    }
+  ]
+}
