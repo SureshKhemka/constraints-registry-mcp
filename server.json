@@ -1,7 +1,7 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.json",
   "name": "io.github.sureshkhemka/constraints-registry",
-  "description": "Policy-as-code guardrails for AI-generated code: serves engineering constraints to coding agents (Claude Code, Cursor, Codex) and validates artifacts with OPA, Conftest, Checkov, and Semgrep.",
+  "description": "Policy-as-code guardrails for AI coding agents, validated via OPA, Conftest, Checkov & Semgrep.",
   "repository": {
     "url": "https://github.com/SureshKhemka/constraints-registry",
     "source": "github"
