@@ -6,6 +6,12 @@ follow [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-06-27
+
+### Added
+- Ownership marker (`mcp-name`) in the README so the package can be published to
+  the official MCP registry.
+
 ## [0.1.0] - 2026-06-27
 
 First tagged, packaged release.
@@ -26,5 +32,6 @@ First tagged, packaged release.
   conduct, security policy, issue/PR templates, and CI.
 - PyPI packaging (`constraints-registry`) and an MCP registry `server.json`.
 
-[Unreleased]: https://github.com/SureshKhemka/constraints-registry/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/SureshKhemka/constraints-registry/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/SureshKhemka/constraints-registry/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/SureshKhemka/constraints-registry/releases/tag/v0.1.0

@@ -1,5 +1,7 @@
 # Constraint Registry
 
+<!-- mcp-name: io.github.SureshKhemka/constraints-registry -->
+
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue.svg)](pyproject.toml)
 [![CI](https://github.com/SureshKhemka/constraints-registry/actions/workflows/ci.yml/badge.svg)](https://github.com/SureshKhemka/constraints-registry/actions/workflows/ci.yml)
