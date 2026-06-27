@@ -1,5 +1,5 @@
 [project]
-name = "constraint-registry"
+name = "constraints-registry"
 version = "0.1.0"
 description = "Constraint Registry V0 — a queryable source of engineering constraints exposed over MCP."
 readme = "README.md"

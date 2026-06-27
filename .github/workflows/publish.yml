@@ -4,7 +4,7 @@ name: Publish to PyPI
 # Uses PyPI Trusted Publishing (OIDC) — no API token is stored as a secret.
 #
 # One-time PyPI setup (https://docs.pypi.org/trusted-publishers/):
-#   Add a "pending publisher" for project `constraint-registry` with:
+#   Add a "pending publisher" for project `constraints-registry` with:
 #     Owner:            SureshKhemka
 #     Repository name:  constraints-registry
 #     Workflow name:    publish.yml

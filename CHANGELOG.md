@@ -24,7 +24,7 @@ First tagged, packaged release.
   runnable against any adapter.
 - Open-source project setup: Apache-2.0 license, contributing guide, code of
   conduct, security policy, issue/PR templates, and CI.
-- PyPI packaging (`constraint-registry`) and an MCP registry `server.json`.
+- PyPI packaging (`constraints-registry`) and an MCP registry `server.json`.
 
 [Unreleased]: https://github.com/SureshKhemka/constraints-registry/compare/v0.1.0...HEAD
 [0.1.0]: https://github.com/SureshKhemka/constraints-registry/releases/tag/v0.1.0
