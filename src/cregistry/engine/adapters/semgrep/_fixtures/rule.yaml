@@ -1,0 +1,15 @@
+rules:
+  - id: no-eval
+    patterns:
+      - pattern: eval(...)
+    message: >-
+      Use of eval() is dangerous: it executes arbitrary code and must not appear
+      in production source.
+    languages: [python]
+    severity: WARNING
+    metadata:
+      license: MIT
+      category: security
+      source: local/test
+      references:
+        - https://owasp.org/www-community/attacks/Code_Injection

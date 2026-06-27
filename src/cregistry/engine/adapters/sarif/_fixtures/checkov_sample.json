@@ -1,0 +1,115 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Checkov",
+          "version": "3.2.0",
+          "informationUri": "https://www.checkov.io",
+          "rules": [
+            {
+              "id": "CKV_AWS_20",
+              "name": "Ensure the S3 bucket ACL is private",
+              "shortDescription": {
+                "text": "Ensure the S3 bucket ACL is private"
+              },
+              "help": {
+                "text": "See Checkov documentation",
+                "uri": "https://docs.bridgecrew.io/docs/s3-bucket-should-have-access-control-list-acl-set-to-private"
+              },
+              "defaultConfiguration": {
+                "level": "error"
+              }
+            },
+            {
+              "id": "CKV_AWS_18",
+              "name": "Ensure S3 bucket access logging is enabled",
+              "shortDescription": {
+                "text": "Ensure S3 bucket access logging is enabled"
+              },
+              "help": {
+                "text": "See Checkov documentation",
+                "uri": "https://docs.bridgecrew.io/docs/ensure-the-s3-bucket-has-access-logging-enabled"
+              },
+              "defaultConfiguration": {
+                "level": "warning"
+              }
+            },
+            {
+              "id": "CKV_AWS_21",
+              "name": "Ensure the S3 bucket has versioning enabled",
+              "shortDescription": {
+                "text": "Ensure the S3 bucket has versioning enabled"
+              },
+              "defaultConfiguration": {
+                "level": "note"
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "CKV_AWS_20",
+          "level": "error",
+          "message": {
+            "text": "Ensure the S3 bucket ACL is private"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "infra/main.tf",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 12
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CKV_AWS_18",
+          "message": {
+            "text": "Ensure S3 bucket access logging is enabled"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "infra/main.tf",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 12
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "CKV_AWS_21",
+          "message": {
+            "text": "Ensure the S3 bucket has versioning enabled"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "infra/main.tf",
+                  "uriBaseId": "%SRCROOT%"
+                },
+                "region": {
+                  "startLine": 12
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -21,5 +21,13 @@ engines:
     adapter: "cregistry.engine.adapters.opa:OpaAdapter"
   - name: conftest
     adapter: "cregistry.engine.adapters.conftest:ConftestAdapter"
+  - name: checkov
+    adapter: "cregistry.engine.adapters.checkov:CheckovAdapter"
+    options:
+      min_level: warning
+  - name: semgrep
+    adapter: "cregistry.engine.adapters.semgrep:SemgrepAdapter"
+    options:
+      min_level: warning
 
 precedence_policy: default

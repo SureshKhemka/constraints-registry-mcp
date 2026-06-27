@@ -1,0 +1,1 @@
+{"path": "unsafe.py", "content": "user_input = input(\"expr> \")\nresult = eval(user_input)\nprint(result)\n"}

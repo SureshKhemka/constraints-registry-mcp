@@ -1,0 +1,18 @@
+# Checkov policy config used by the pass/fail fixture conformance cases.
+#
+# ``policy`` locator for evaluate(): absolute path to this file.
+# The adapter passes it to Checkov via ``--config-file``.
+#
+# CKV_AWS_20 (CloudFormation): "Ensure the S3 bucket does not allow READ
+#   permissions to everyone"
+#
+#   Pass fixture: AWS::S3::Bucket with AccessControl: Private  -> Verdict.passed
+#   Fail fixture: AWS::S3::Bucket with AccessControl: PublicRead -> Verdict.failed
+#
+# Framework: cloudformation — fixtures are CloudFormation JSON templates.
+# CloudFormation JSON is natively parsed by json.loads() (dict) and then
+# materialised to a temp .json file by the adapter, matching CONTRACTS §2.
+check:
+  - CKV_AWS_20
+framework:
+  - cloudformation

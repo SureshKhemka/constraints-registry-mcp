@@ -1,0 +1,1 @@
+{"path": "safe.py", "content": "result = int(\"42\")\nprint(result)\n"}
