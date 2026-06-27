@@ -5,6 +5,11 @@
 [![CI](https://github.com/SureshKhemka/constraints-registry/actions/workflows/ci.yml/badge.svg)](https://github.com/SureshKhemka/constraints-registry/actions/workflows/ci.yml)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
 
+> **Policy-as-code guardrails for AI-generated code.** An **MCP server** that
+> serves engineering constraints to coding agents (Claude Code, Cursor, Codex) at
+> generation time and validates artifacts with **OPA, Conftest, Checkov, and
+> Semgrep**.
+
 A single, queryable source of engineering **constraints** (infrastructure,
 organizational, architectural) that coding agents (Claude Code, Cursor, Codex, …)
 consult at code-generation time, exposed over an **MCP server**. It does **not**

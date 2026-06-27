@@ -1,0 +1,21 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-09-29/server.json",
+  "name": "io.github.sureshkhemka/constraint-registry",
+  "description": "Policy-as-code guardrails for AI-generated code: serves engineering constraints to coding agents (Claude Code, Cursor, Codex) and validates artifacts with OPA, Conftest, Checkov, and Semgrep.",
+  "repository": {
+    "url": "https://github.com/SureshKhemka/constraints-registry",
+    "source": "github"
+  },
+  "version": "0.1.0",
+  "packages": [
+    {
+      "registryType": "pypi",
+      "registryBaseUrl": "https://pypi.org",
+      "identifier": "constraint-registry",
+      "version": "0.1.0",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
